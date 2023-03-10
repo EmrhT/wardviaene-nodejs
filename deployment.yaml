@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nodejs-test
+  name: nodejs-test
+  namespace: nodejs-test-test
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nodejs-test
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: nodejs-test
+    spec:
+      containers:
+      - image: mantislogic/nodejs-test:v2
+        name: nodejs-test
