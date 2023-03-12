@@ -1,29 +1,37 @@
+def commit_id
+
 pipeline {
   agent {
     node {
       label 'kubeagent'
+      defaultContainer 'buildagent'
     }
   }
-def commit_id
 stages {
    stage('Preparation') {
-     checkout scm
-     sh "git rev-parse --short HEAD > .git/commit-id"                        
-     commit_id = readFile('.git/commit-id').trim()
+     steps {
+       checkout scm
+       sh "git rev-parse --short HEAD > .git/commit-id"                        
+       commit_id = readFile('.git/commit-id').trim()
+       }
     }
     stage('test') {
-     nodejs(nodeJSInstallationName: 'nodejs') {
-       sh 'npm install --only=dev'
-       sh 'npm test'
+      steps (nodejs(nodeJSInstallationName: 'nodejs')) {
+        sh 'npm install --only=dev'
+        sh 'npm test'
       }
     }
     stage ('podman build/push') {
-      sh "podman build -t mantislogic/nodejs-test:${commit_id}"
-      sh "podman login -u mantislogic -p $DOCKERHUB_PASS"
-      sh "podman push mantislogic/nodejs-test:${commit_id}"
+      steps {
+        sh "podman build -t mantislogic/nodejs-test:${commit_id}"
+        sh "podman login -u mantislogic -p $DOCKERHUB_PASS"
+        sh "podman push mantislogic/nodejs-test:${commit_id}"
+      }
     }
     stage ('Deploy to Test') {
-      sh 'cat deployment.yaml | sed "s/{{GIT_COMMIT}}/${commit_id}/g" | kubectl apply -f -'
+      steps {
+        sh 'cat deployment.yaml | sed "s/{{GIT_COMMIT}}/${commit_id}/g" | kubectl apply -f -'
+      }
     }
   }
 }
