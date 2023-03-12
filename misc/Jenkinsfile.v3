@@ -24,7 +24,7 @@ stages {
     }
     stage ('podman build/push') {
       steps {
-        sh "podman build -t mantislogic/nodejs-test:${commit_id}"
+        sh "podman build -t mantislogic/nodejs-test:${commit_id} ."
         sh "podman login -u mantislogic -p $DOCKERHUB_PASS"
         sh "podman push mantislogic/nodejs-test:${commit_id}"
       }
