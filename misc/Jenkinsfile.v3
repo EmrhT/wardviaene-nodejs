@@ -4,8 +4,8 @@ pipeline {
       label 'kubeagent'
     }
   }
+def commit_id
 stages {
-   def commit_id
    stage('Preparation') {
      checkout scm
      sh "git rev-parse --short HEAD > .git/commit-id"                        
