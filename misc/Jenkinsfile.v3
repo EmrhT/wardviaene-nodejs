@@ -11,9 +11,15 @@ node {
        sh 'npm test'
      }
    }
-   stage('docker build/push') {
-     docker.withRegistry('https://index.docker.io/v2/', 'dockerhub') {
-       def app = docker.build("wardviaene/docker-nodejs-demo:${commit_id}", '.').push()
-     }
+   stage ('podman build/push') {
+      sh "podman build -t mantislogic/nodejs-test:${commit_id}"
+      sh "podman login -u mantislogic -p $DOCKERHUB_PASS"
+      sh "podman push mantislogic/nodejs-test:${commit_id}"
+   }
+   stage ('Deploy to Test') {
+      sh "cat deployment.yaml | sed "s/{{GIT_COMMIT}}/${commit_id}/g" | kubectl apply -f -"
    }
 }
+
+
+
