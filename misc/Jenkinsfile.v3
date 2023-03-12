@@ -19,17 +19,6 @@ stages {
         sh 'npm test'
       }
     }
-    stage ('Deploy to Test1') {
-      steps {
-        withCredentials([file(credentialsId: 'afa1a7c1-5e6c-4d9b-82cb-4293f5c144a3', variable: 'KUBECRED')]) {
-          sh 'echo $KUBECRED'
-          sh 'mkdir ~/.kube'
-          sh 'cat $KUBECRED > ~/.kube/config'
-          sh 'sleep 99999'
-          sh 'cat deployment.yaml | sed "s/{{GIT_COMMIT}}/$GIT_COMMIT/g" | kubectl apply -f -'
-        }
-      }
-    }
     stage ('podman build/push') {
       steps {
         sh "podman build -t mantislogic/nodejs-test:$GIT_COMMIT ."
@@ -40,6 +29,7 @@ stages {
     stage ('Deploy to Test') {
       steps {
         withCredentials([file(credentialsId: 'afa1a7c1-5e6c-4d9b-82cb-4293f5c144a3', variable: 'KUBECRED')]) {
+          sh 'mkdir ~/.kube'
           sh 'cat $KUBECRED > ~/.kube/config'
           sh 'cat deployment.yaml | sed "s/{{GIT_COMMIT}}/$GIT_COMMIT/g" | kubectl apply -f -'
         }
