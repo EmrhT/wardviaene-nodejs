@@ -13,20 +13,20 @@ stages {
          }
        }
     }
-    stage('test') {
+    stage('Test') {
       steps (nodejs(nodeJSInstallationName: 'nodejs')) {
         sh 'npm install --only=dev'
         sh 'npm test'
       }
     }
-    stage ('podman build/push') {
+    stage ('Podman Build & Push') {
       steps {
         sh "podman build -t mantislogic/nodejs-test:$GIT_COMMIT ."
         sh "podman login -u mantislogic -p $DOCKERHUB_PASS"
         sh "podman push mantislogic/nodejs-test:$GIT_COMMIT"
       }
     }
-    stage ('Deploy to Test') {
+    stage ('Deploy to K8S Test Namespace') {
       steps {
         withCredentials([file(credentialsId: 'afa1a7c1-5e6c-4d9b-82cb-4293f5c144a3', variable: 'KUBECRED')]) {
           sh 'mkdir ~/.kube'
