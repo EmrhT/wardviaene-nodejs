@@ -17,7 +17,7 @@ node {
       sh "podman push mantislogic/nodejs-test:${commit_id}"
    }
    stage ('Deploy to Test') {
-      sh "cat deployment.yaml | sed "s/{{GIT_COMMIT}}/${commit_id}/g" | kubectl apply -f -"
+      sh 'cat deployment.yaml | sed "s/{{GIT_COMMIT}}/${commit_id}/g" | kubectl apply -f -'
    }
 }
 
