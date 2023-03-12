@@ -31,7 +31,9 @@ stages {
     }
     stage ('Deploy to Test') {
       steps {
-        sh "/bin/sh -c 'cat deployment.yaml | sed "s/{{GIT_COMMIT}}/${commit_id}/g" | kubectl apply -f -'"
+        script {
+          sh 'cat deployment.yaml | sed "s/{{GIT_COMMIT}}/${commit_id}/g" | kubectl apply -f -'
+        }
       }
     }
   }
