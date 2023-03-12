@@ -2,10 +2,6 @@ pipeline {
   agent {
     node {
       label 'kubeagent'
-      withCredentials([file(credentialsId: 'afa1a7c1-5e6c-4d9b-82cb-4293f5c144a3', variable: 'KUBECRED')]) {
-          sh 'sleep 9999'
-          sh 'cat $KUBECRED > ~/.kube/config'
-      }
     }
   }
 stages {
@@ -25,7 +21,7 @@ stages {
     }
     stage ('Deploy to Test1') {
       steps {
-        withCredentials([file(credentialsId: 'afa1a7c1-5e6c-4d9b-82cb-4293f5c144a3', variable: 'KUBECRED')]) {
+        withCredentials([file(credentialsId: 'config-svcendpoint', variable: 'KUBECRED')]) {
           sh 'sleep 9999'
           sh 'cat $KUBECRED > ~/.kube/config'
           sh 'cat deployment.yaml | sed "s/{{GIT_COMMIT}}/$GIT_COMMIT/g" | kubectl apply -f -'
@@ -41,7 +37,7 @@ stages {
     }
     stage ('Deploy to Test') {
       steps {
-        withCredentials([file(credentialsId: 'afa1a7c1-5e6c-4d9b-82cb-4293f5c144a3', variable: 'KUBECRED')]) {
+        withCredentials([file(credentialsId: 'config-svcendpoint', variable: 'KUBECRED')]) {
           sh 'cat $KUBECRED > ~/.kube/config'
           sh 'cat deployment.yaml | sed "s/{{GIT_COMMIT}}/$GIT_COMMIT/g" | kubectl apply -f -'
         }
