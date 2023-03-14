@@ -19,6 +19,16 @@ stages {
         sh 'npm test'
       }
     }
+    stage('sonar-scanner') {
+      steps {
+        script {
+          def sonarqubeScannerHome = tool name: 'sonar', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+          withCredentials([string(credentialsId: 'sonar', variable: 'sonarLogin')]) {
+            sh "${sonarqubeScannerHome}/bin/sonar-scanner -e -Dsonar.host.url=http://sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 -Dsonar.login=${sonarLogin} -Dsonar.projectName=nodejs-test -Dsonar.projectVersion=${env.BUILD_NUMBER} -Dsonar.projectKey=NJ -Dsonar.sources=./index.js -Dsonar.tests=test/ -Dsonar.language=javascript"
+          }  
+        }
+      }
+    }
     stage ('Podman Build & Push') {
       steps {
         sh "podman build -t mantislogic/nodejs-test:$GIT_COMMIT ."
@@ -32,16 +42,6 @@ stages {
           sh 'mkdir ~/.kube'
           sh 'cat $KUBECRED > ~/.kube/config'
           sh 'cat deployment.yaml | sed "s/{{GIT_COMMIT}}/$GIT_COMMIT/g" | kubectl apply -f -'
-        }
-      }
-    }
-    stage('sonar-scanner') {
-      steps {
-        script {
-          def sonarqubeScannerHome = tool name: 'sonar', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-          withCredentials([string(credentialsId: 'sonar', variable: 'sonarLogin')]) {
-            sh "${sonarqubeScannerHome}/bin/sonar-scanner -e -Dsonar.host.url=http://sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 -Dsonar.login=${sonarLogin} -Dsonar.projectName=nodejs-test -Dsonar.projectVersion=${env.BUILD_NUMBER} -Dsonar.projectKey=NJ -Dsonar.sources=. -Dsonar.tests=test/ -Dsonar.language=javascript"
-          }  
         }
       }
     }
