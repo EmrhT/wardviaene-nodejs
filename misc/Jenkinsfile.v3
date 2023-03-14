@@ -36,6 +36,13 @@ stages {
         sh "podman push mantislogic/nodejs-test:$GIT_COMMIT"
       }
     }
+    stage('Trivy Image Scan') {
+      steps {
+          sh 'curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.18.3'
+          sh 'curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl > html.tpl'
+          sh 'trivy image --ignore-unfixed --vuln-type os,library --exit-code 1 --severity CRITICAL mantislogic/nodejs-test:$GIT_COMMIT'
+      }
+    }
     stage ('Deploy to K8S Test Namespace') {
       steps {
         withCredentials([file(credentialsId: 'afa1a7c1-5e6c-4d9b-82cb-4293f5c144a3', variable: 'KUBECRED')]) {
@@ -49,6 +56,15 @@ stages {
       steps {
         node('owasp-zap') {
           sh 'zap-full-scan.py -t http://nodejs-test-svc.nodejs-test-test.svc.cluster.local:3000'
+        }
+      }
+    }
+    stage ('Deploy to K8S Prod Namespace') {
+      steps {
+        withCredentials([file(credentialsId: 'afa1a7c1-5e6c-4d9b-82cb-4293f5c144a3', variable: 'KUBECRED')]) {
+          sh 'mkdir ~/.kube'
+          sh 'cat $KUBECRED > ~/.kube/config'
+          sh 'cat deployment-prod.yaml | sed "s/{{GIT_COMMIT}}/$GIT_COMMIT/g" | kubectl apply -f -'
         }
       }
     }
