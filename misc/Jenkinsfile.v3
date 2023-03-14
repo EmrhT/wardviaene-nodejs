@@ -47,7 +47,7 @@ stages {
     }
     stage ('OWASP-ZAP Dynamic Scan') {
       steps {
-        node ('owasp-zap') {
+        node('owasp-zap') {
           sh 'zap-full-scan.py -t http://nodejs-test-svc.nodejs-test-test.svc.cluster.local:3000'
         }
       }
