@@ -21,8 +21,7 @@ stages {
     }
     stage ('OWASP-ZAP Dynamic Scan2') {
       steps {
-          sh 'podman run -t owasp/zap2docker-stable:2.12.0 zap-full-scan.py -t http://nodejs-test-svc.nodejs-test-test.svc.cluster.local:3000 > owasp-results.txt'
-          sh 'sleep 99999999'
+          sh 'podman run -t owasp/zap2docker-stable:2.12.0 zap-full-scan.py -t http://nodejs-test-svc.nodejs-test-test.svc.cluster.local:3000 > owasp-results.txt | sleep 99999'
           sh 'cat owasp-results.txt | egrep  "^FAIL-NEW: 0.*FAIL-INPROG: 0"'
       }
     }
