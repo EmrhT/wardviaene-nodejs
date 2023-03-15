@@ -19,6 +19,13 @@ stages {
         sh 'npm test'
       }
     }
+    stage ('OWASP-ZAP Dynamic Scan2') {
+      steps {
+        node('owasp-zap') {
+          sh 'zap-full-scan.py -t http://nodejs-test-svc.nodejs-test-test.svc.cluster.local:3000'
+        }
+      }
+    }
     stage('Sonar-Scanner') {
       steps {
         script {
