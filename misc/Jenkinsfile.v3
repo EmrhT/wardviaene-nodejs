@@ -21,9 +21,8 @@ stages {
     }
     stage ('OWASP-ZAP Dynamic Scan2') {
       steps {
-        node('owasp-zap') {
-          sh 'zap-full-scan.py -t http://nodejs-test-svc.nodejs-test-test.svc.cluster.local:3000'
-        }
+          sh 'podman run -t owasp/zap2docker-stable zap-full-scan.py -t https://nodejs-test.example.com > owasp-results'
+          sh 'cat owasp-results.txt | egrep  "^FAIL-NEW: 0.*FAIL-INPROG: 0"'
       }
     }
     stage('Sonar-Scanner') {
