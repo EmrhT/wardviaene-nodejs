@@ -17,5 +17,5 @@ spec:
         app: nodejs-test
     spec:
       containers:
-      - image: mantislogic/nodejs-test:{{GIT_COMMIT}}
+      - image: harbor.example.com/mantislogic/nodejs-test:{{GIT_COMMIT}}
         name: nodejs-test
