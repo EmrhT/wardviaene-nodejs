@@ -31,16 +31,17 @@ stages {
     }
     stage ('Podman Build & Push') {
       steps {
-        sh "podman build -t mantislogic/nodejs-test:$GIT_COMMIT ."
-        sh "podman login -u mantislogic -p $DOCKERHUB_PASS"
-        sh "podman push mantislogic/nodejs-test:$GIT_COMMIT"
+        sh "echo 192.168.122.15 harbor.example.com >> /etc/hosts"
+        sh "podman build -t harbor.example.com/mantislogic/nodejs-test:$GIT_COMMIT ."
+        sh "podman login --tls-verify=false harbor.example.com -u admin -p $DOCKERHUB_PASS"
+        sh "podman push --tls-verify=false harbor.example.com/mantislogic/nodejs-test:$GIT_COMMIT"
       }
     }
     stage('Trivy Image Scan') {
       steps {
           sh 'curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.18.3'
           sh 'curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl > html.tpl'
-          sh 'trivy image --ignore-unfixed --vuln-type os,library --exit-code 1 --severity CRITICAL mantislogic/nodejs-test:$GIT_COMMIT'
+          sh 'TRIVY_INSECURE=true trivy image --ignore-unfixed --vuln-type os,library --exit-code 1 --severity CRITICAL harbor.example.com/mantislogic/nodejs-test:$GIT_COMMIT'
       }
     }
     stage ('Deploy to K8S Test Namespace') {
@@ -54,7 +55,7 @@ stages {
     }
     stage ('OWASP-ZAP Dynamic Scan') {
       steps {
-          sh 'podman run -t owasp/zap2docker-stable:2.12.0 zap-full-scan.py -t http://nodejs-test-svc.nodejs-test-test.svc.cluster.local:3000 | tee owasp-results.txt || true'
+          sh 'podman run -t harbor.example.com/mantislogic/zap2docker-stable:2.12.0 zap-full-scan.py -t http://nodejs-test-svc.nodejs-test-test.svc.cluster.local:3000 | tee owasp-results.txt || true'
           sh 'cat owasp-results.txt | egrep  "^FAIL-NEW: 0.*FAIL-INPROG: 0"'
       }
     }
